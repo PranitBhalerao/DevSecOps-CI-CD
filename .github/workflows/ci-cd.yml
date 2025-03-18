@@ -146,85 +146,40 @@ jobs:
         id: set_output
         run: echo "image_tag=$(echo ${{ github.sha }} | cut -c1-7)" >> $GITHUB_OUTPUT
 
-# update-k8s:
-#    name: Update Kubernetes Deployment
-#    needs: [docker]
-#    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-#    steps:
-#      - name: Checkout code
-#        uses: actions/checkout@v4
-#        with:
-#          token: ${{ secrets.TOKEN }}
-#      
-#      - name: Setup Git config
-#        run: |
-#          git config user.name "GitHub Actions"
-#          git config user.email "actions@github.com"
+  update-k8s:
+    name: Update Kubernetes Deployment
+    runs-on: ubuntu-latest
+    needs: [docker]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.TOKEN }}
       
-#      - name: Update Kubernetes deployment file
-#        env:
-#          IMAGE_TAG: sha-${{ github.sha }}
-#          GITHUB_REPOSITORY: ${{ github.repository }}
-#          REGISTRY: ghcr.io
-#        run: |
-#          # Define the new image with tag
-#          NEW_IMAGE="${REGISTRY}/${GITHUB_REPOSITORY}:${IMAGE_TAG}"
-#          
-#          sed -i "s|image: ${REGISTRY}/.*|image: ${NEW_IMAGE}|g" kubernetes/deployment.yaml
-#          
-#          # Verify the change
-#          echo "Updated deployment to use image: ${NEW_IMAGE}"
-#          grep -A 1 "image:" kubernetes/deployment.yaml
-#      
-#      - name: Commit and push changes
-#        run: |
-#          git add kubernetes/deployment.yaml
-#          git commit -m "Update Kubernetes deployment with new image tag: ${{ needs.docker.outputs.image_tag }} [skip ci]" || echo "No changes to commit"
-#          git push
-
-update-k8s:
-  name: Update Kubernetes Deployment
-  runs-on: ubuntu-latest
-  needs: [docker]
-  if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-  steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      with:
-        token: ${{ secrets.TOKEN }}
-
-    - name: Setup Git config
-      run: |
-        git config user.name "GitHub Actions"
-        git config user.email "actions@github.com"
-
-    - name: Debug Kubernetes Deployment File
-      run: |
-        cat kubernetes/deployment.yaml  # Check before modification
-
-    - name: Update Kubernetes Deployment File
-      env:
-        IMAGE_TAG: sha-${{ github.sha }}
-        GITHUB_REPOSITORY: ${{ github.repository }}
-        REGISTRY: ghcr.io
-      run: |
-        # Define the new image with tag
-        NEW_IMAGE="${REGISTRY}/${GITHUB_REPOSITORY}:${IMAGE_TAG}"
-
-        # Debug existing image line
-        grep -A 1 "image:" kubernetes/deployment.yaml || echo "Image line not found!"
-
-        # Update the image line
-        sed -i "s|image: ${REGISTRY}/.*|image: ${NEW_IMAGE}|g" kubernetes/deployment.yaml
-
-        # Verify the change
-        echo "Updated deployment to use image: ${NEW_IMAGE}"
-        grep -A 1 "image:" kubernetes/deployment.yaml
-
-    - name: Commit and Push Changes
-      run: |
-        git add kubernetes/deployment.yaml
-        git status  # Show changes
-        git diff  # Display the actual diff
-        git commit -m "Update Kubernetes deployment with new image tag: ${{ needs.docker.outputs.image_tag }}" || echo "No changes to commit"
-        git push origin main || echo "Push failed. Check token permissions."
+      - name: Setup Git config
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+      
+      - name: Update Kubernetes deployment file
+        env:
+          IMAGE_TAG: sha-${{ github.sha }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          REGISTRY: ghcr.io
+        run: |
+          # Define the new image with tag
+          NEW_IMAGE="${REGISTRY}/${GITHUB_REPOSITORY}:${IMAGE_TAG}"
+          
+          # Update the deployment file directly
+          sed -i "s|image: ${REGISTRY}/.*|image: ${NEW_IMAGE}|g" kubernetes/deployment.yaml
+          
+          # Verify the change
+          echo "Updated deployment to use image: ${NEW_IMAGE}"
+          grep -A 1 "image:" kubernetes/deployment.yaml
+      
+      - name: Commit and push changes
+        run: |
+          git add kubernetes/deployment.yaml
+          git commit -m "Update Kubernetes deployment with new image tag: ${{ needs.docker.outputs.image_tag }} [skip ci]" || echo "No changes to commit"
+          git push
