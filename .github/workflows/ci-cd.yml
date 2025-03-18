@@ -4,10 +4,11 @@ on:
   workflow_dispatch:  # Ignore changes to this file to prevent loops
   push:
     branches: [ main ]
+  paths-ignore:
+      - 'kubernetes/deployment.yaml'
   pull_request:
     branches: [ main ]
-    paths-ignore:
-      - 'kubernetes/deployment.yaml'
+    
 
 jobs:
   test:
