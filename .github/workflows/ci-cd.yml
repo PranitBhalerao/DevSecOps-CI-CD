@@ -4,10 +4,10 @@ on:
   workflow_dispatch:  # Ignore changes to this file to prevent loops
   push:
     branches: [ main ]
-  paths-ignore:
-      - 'kubernetes/deployment.yaml'
   pull_request:
     branches: [ main ]
+    paths-ignore:
+      - 'kubernetes/deployment.yaml'
     
 
 jobs:
@@ -145,7 +145,7 @@ jobs:
         id: set_output
         run: echo "image_tag=$(echo ${{ github.sha }} | cut -c1-7)" >> $GITHUB_OUTPUT
 
-update-k8s:
+  update-k8s:
     name: Update Kubernetes Deployment
     runs-on: ubuntu-latest
     needs: [docker]
