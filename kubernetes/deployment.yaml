@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: tic-tac-toe
-        image: ghcr.io/PranitBhalerao/argo-cicd@sha256:c94408ea7f139bd5153612ff38964e6079f02d41
+        image: ghcr.io/pranitbhale070799/argo-cicd@sha256:c94408ea7f139bd5153612ff38964e6079f02d41
         # Image will be automatically updated by CI/CD pipeline
         imagePullPolicy: Always
         ports:
